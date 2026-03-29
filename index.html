@@ -2,127 +2,416 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Котик</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Мурчащий котик</title>
     <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
             margin: 0;
             min-height: 100vh;
-            background: #f5f5f5;
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e2f, #1e2a1c);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background 0.5s ease;
         }
         .container {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 40px;
+            padding: 30px 25px;
             text-align: center;
-            width: 300px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s;
         }
         .cat {
-            font-size: 80px;
+            font-size: 100px;
             cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            display: inline-block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        .cat:active {
+            transform: scale(0.95);
+        }
+        .cat-purr {
+            animation: catWiggle 0.3s ease-in-out 2;
+        }
+        @keyframes catWiggle {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(5deg) scale(1.05); }
+            75% { transform: rotate(-5deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1); }
         }
         .question {
+            font-size: 22px;
             margin: 20px 0;
-            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e2f;
         }
         button {
-            font-size: 18px;
-            padding: 8px 20px;
-            margin: 5px;
+            font-size: 20px;
+            padding: 12px 28px;
+            margin: 10px;
             border: none;
-            border-radius: 30px;
+            border-radius: 60px;
             cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
         }
         .yes {
             background: #4CAF50;
             color: white;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+        .yes:active {
+            transform: scale(0.97);
         }
         .no {
-            background: #cccccc;
+            background: #f44336;
+            color: white;
+            box-shadow: 0 4px 10px rgba(244,67,54,0.3);
+        }
+        .counter {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+            background: #f0f0f0;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: 500;
         }
         .hidden {
             display: none;
         }
-        .hearts {
+        .effects-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 1000;
         }
-        .heart {
+        .effect {
             position: absolute;
-            font-size: 20px;
+            font-size: 24px;
             animation: fly 1s ease-out forwards;
         }
         @keyframes fly {
+            0% { transform: translateY(0) scale(0.3) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-180px) scale(1) rotate(360deg); opacity: 0; }
+        }
+        .purr-text {
+            position: fixed;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff9800;
+            text-shadow: 0 0 5px white;
+            pointer-events: none;
+            z-index: 2000;
+            animation: floatUp 1s ease-out forwards;
+            font-family: monospace;
+        }
+        @keyframes floatUp {
             0% { transform: translateY(0) scale(0.5); opacity: 1; }
-            100% { transform: translateY(-150px) scale(0.8); opacity: 0; }
+            100% { transform: translateY(-120px) scale(1.2); opacity: 0; }
+        }
+        .yes-highlight {
+            animation: yesPulse 0.2s ease-in-out;
+        }
+        @keyframes yesPulse {
+            0% { transform: scale(1); background: #4CAF50; }
+            50% { transform: scale(1.08); background: #8bc34a; box-shadow: 0 0 20px #ffeb3b; }
+            100% { transform: scale(1); background: #4CAF50; }
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+        .murr-counter {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #b96f0f;
+            background: #fff3e0;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="mainContainer">
     <div class="cat" id="cat">🐱</div>
     <div class="question">Будешь моей любимкой?</div>
-    <button class="yes" id="yesBtn">Да</button>
-    <button class="no" id="noBtn">Нет</button>
-    <div id="message" class="hidden">❤️ Договорились! ❤️</div>
+    <button class="yes" id="yesBtn">Да 💚</button>
+    <button class="no" id="noBtn">Нет ❌</button>
+    <div class="counter" id="counterText">Нажатий "Нет": 0</div>
+    <div id="infoMessage" class="message hidden"></div>
+    <div id="murrCounterDisplay" class="murr-counter hidden"></div>
+    <footer>🐾 нажми на котика — погладь 🐾</footer>
 </div>
-<div id="hearts"></div>
+<div id="effectsLayer" class="effects-layer"></div>
 
 <script>
-    let done = false;
-    let noSize = 1;
-    const yes = document.getElementById('yesBtn');
-    const no = document.getElementById('noBtn');
+    // --- Элементы ---
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
     const cat = document.getElementById('cat');
-    const msg = document.getElementById('message');
-    const heartsDiv = document.getElementById('hearts');
+    const counterSpan = document.getElementById('counterText');
+    const infoMsg = document.getElementById('infoMessage');
+    const effectsDiv = document.getElementById('effectsLayer');
+    const container = document.getElementById('mainContainer');
+    const murrCounterDisplay = document.getElementById('murrCounterDisplay');
 
-    function makeHearts(count) {
+    // --- Переменные ---
+    let noCount = 0;
+    let noScale = 1;
+    let isLoved = false;
+    let murrCount = 0;          // счётчик нажатий на "Да" после согласия
+    const MIN_SCALE = 0.2;
+    const SHRINK_STEP = 0.08;
+
+    // --- Фразы для мурчания ---
+    const purrSounds = [
+        "🐱 мур-мур... 💚", "😻 мурлык!", "💚 муррр 💚", "🐱 урчит от счастья",
+        "❤️ мур-мур-мур ❤️", "😽 прррр", "💕 мурчалка 💕", "🐱 счастливый котик"
+    ];
+
+    // --- Эффекты ---
+    function createEffect(type, count = 20) {
+        const icons = {
+            hearts: ['❤️', '💚', '💙', '💜', '🧡', '💛', '💖', '💗'],
+            stars: ['⭐', '🌟', '✨', '💫', '⭐'],
+            confetti: ['🎉', '🎊', '✨', '💥', '🎈', '🌸'],
+            mixed: ['❤️', '💚', '✨', '🌟', '🎉', '💖', '😻', '🐱']
+        };
+        let selected = icons.hearts;
+        if (type === 'stars') selected = icons.stars;
+        if (type === 'confetti') selected = icons.confetti;
+        if (type === 'mixed') selected = icons.mixed;
+
         for (let i = 0; i < count; i++) {
-            const h = document.createElement('div');
-            h.className = 'heart';
-            const heartsList = ['❤️', '🧡', '💛', '💚', '💙', '💜'];
-            h.textContent = heartsList[Math.floor(Math.random() * heartsList.length)];
-            h.style.left = Math.random() * 100 + '%';
-            h.style.top = Math.random() * 100 + '%';
-            h.style.fontSize = (15 + Math.random() * 25) + 'px';
-            heartsDiv.appendChild(h);
-            setTimeout(() => h.remove(), 1000);
+            const el = document.createElement('div');
+            el.className = 'effect';
+            const iconSet = Array.isArray(selected) ? selected : icons.hearts;
+            el.textContent = iconSet[Math.floor(Math.random() * iconSet.length)];
+            el.style.left = Math.random() * 100 + '%';
+            el.style.top = Math.random() * 100 + '%';
+            el.style.fontSize = (15 + Math.random() * 32) + 'px';
+            el.style.animationDuration = (0.7 + Math.random() * 0.8) + 's';
+            effectsDiv.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
         }
     }
 
-    yes.onclick = () => {
-        if (done) return;
-        done = true;
-        msg.classList.remove('hidden');
-        makeHearts(40);
-        setTimeout(() => makeHearts(25), 300);
-        cat.textContent = '🐱❤️';
-        no.style.opacity = '0.5';
+    // --- Визуальное мурчание (всплывающий текст) ---
+    function showPurr() {
+        const randomPurr = purrSounds[Math.floor(Math.random() * purrSounds.length)];
+        const purrDiv = document.createElement('div');
+        purrDiv.className = 'purr-text';
+        purrDiv.textContent = randomPurr;
+        purrDiv.style.left = (cat.getBoundingClientRect().left + 30) + 'px';
+        purrDiv.style.top = (cat.getBoundingClientRect().top - 20) + 'px';
+        document.body.appendChild(purrDiv);
+        setTimeout(() => purrDiv.remove(), 1000);
+        
+        // Вибрация на телефоне (приятная)
+        if (navigator.vibrate) navigator.vibrate(80);
+        
+        // Котик дёргается
+        cat.classList.add('cat-purr');
+        setTimeout(() => cat.classList.remove('cat-purr'), 400);
+    }
+
+    // --- Пульсация элемента ---
+    function pulse(element) {
+        if (!element) return;
+        element.classList.add('yes-highlight');
+        setTimeout(() => element.classList.remove('yes-highlight'), 300);
+    }
+
+    // --- Обновление фона (становится теплее с каждым "Мур") ---
+    function updateBackground() {
+        if (isLoved) {
+            const warmth = Math.min(0.7, murrCount * 0.03);
+            const r = 100 + Math.floor(warmth * 100);
+            const g = 70 + Math.floor(warmth * 60);
+            const b = 50 + Math.floor(warmth * 40);
+            document.body.style.background = `radial-gradient(circle at 30% 20%, rgb(${r+30}, ${g+20}, ${b+10}), rgb(${r}, ${g}, ${b}))`;
+        } else {
+            const intensity = Math.min(0.5, noCount * 0.03);
+            const r = 44 + intensity * 80;
+            const g = 62 + intensity * 30;
+            const b = 47 + intensity * 20;
+            document.body.style.background = `linear-gradient(135deg, rgb(${r}, ${g}, ${b}), #1e2a1c)`;
+        }
+    }
+
+    // --- Кнопка ДА (можно нажимать много раз!) ---
+    yesBtn.onclick = () => {
+        if (!isLoved) {
+            // ПЕРВОЕ НАЖАТИЕ — согласие
+            isLoved = true;
+            murrCount = 1;
+            murrCounterDisplay.classList.remove('hidden');
+            murrCounterDisplay.innerHTML = `🐱 Мурчаний: ${murrCount}`;
+            infoMsg.classList.remove('hidden');
+            infoMsg.innerHTML = "💚💚💚 ДОГОВОРИЛИСЬ! ТЫ ЛЮБИМКА! 💚💚💚";
+            infoMsg.style.background = "#d4edda";
+            infoMsg.style.color = "#155724";
+            infoMsg.style.fontWeight = "bold";
+            
+            createEffect('confetti', 50);
+            createEffect('hearts', 45);
+            setTimeout(() => createEffect('mixed', 35), 300);
+            
+            cat.textContent = "🐱💚✨";
+            noBtn.style.opacity = "0.4";
+            noBtn.disabled = true;
+            noBtn.style.cursor = "not-allowed";
+            yesBtn.style.transform = "scale(1.05)";
+            
+            showPurr();  // первое мурчание
+            updateBackground();
+            pulse(container);
+            pulse(yesBtn);
+        } 
+        else {
+            // ПОВТОРНЫЕ НАЖАТИЯ — просто мурчание и сердечки
+            murrCount++;
+            murrCounterDisplay.innerHTML = `🐱 Мурчаний: ${murrCount} 💚`;
+            
+            // Каждый раз новые сердечки
+            createEffect('hearts', 25);
+            createEffect('stars', 15);
+            
+            // Мурчание
+            showPurr();
+            
+            // Котик радуется
+            cat.textContent = "🐱💚✨😻";
+            setTimeout(() => {
+                if (isLoved) cat.textContent = "🐱💚✨";
+            }, 600);
+            
+            // Пульсация кнопки
+            pulse(yesBtn);
+            
+            // Обновляем фон (становится теплее)
+            updateBackground();
+            
+            // Если много мурчаний — дополнительный сюрприз
+            if (murrCount === 5) {
+                createEffect('confetti', 40);
+                const surprise = document.createElement('div');
+                surprise.textContent = "💚 Ты самая лучшая! 💚";
+                surprise.style.position = "fixed";
+                surprise.style.top = "30%";
+                surprise.style.left = "50%";
+                surprise.style.transform = "translateX(-50%)";
+                surprise.style.background = "#ffd700";
+                surprise.style.padding = "10px 20px";
+                surprise.style.borderRadius = "50px";
+                surprise.style.fontWeight = "bold";
+                surprise.style.zIndex = "3000";
+                document.body.appendChild(surprise);
+                setTimeout(() => surprise.remove(), 2000);
+            }
+            if (murrCount === 10) {
+                createEffect('mixed', 60);
+                alert("😻💚 Ты невероятная! Котик счастлив! 💚😻");
+            }
+        }
+        
+        // Вибрация
+        if (navigator.vibrate) navigator.vibrate(50);
     };
 
-    no.onclick = () => {
-        if (done) return;
-        noSize = Math.max(0.2, noSize - 0.1);
-        no.style.transform = `scale(${noSize})`;
-        if (noSize <= 0.3) no.style.opacity = '0.6';
-        cat.textContent = '😿';
-        setTimeout(() => { if (!done) cat.textContent = '🐱'; }, 300);
+    // --- Кнопка НЕТ (уменьшается + счётчик) ---
+    noBtn.onclick = () => {
+        if (isLoved) return;
+        noCount++;
+        counterSpan.textContent = `Нажатий "Нет": ${noCount}`;
+        
+        noScale = Math.max(MIN_SCALE, noScale - SHRINK_STEP);
+        noBtn.style.transform = `scale(${noScale})`;
+        if (noScale <= 0.35) noBtn.style.opacity = "0.5";
+        
+        createEffect('stars', 12);
+        
+        if (noCount === 1) cat.textContent = "😿";
+        else if (noCount === 3) cat.textContent = "😾";
+        else if (noCount === 5) cat.textContent = "🙀";
+        else if (noCount >= 7) cat.textContent = "💔🐱";
+        
+        if (noCount === 5) {
+            const tempMsg = document.createElement('div');
+            tempMsg.textContent = "😿 ну зачем ты так... нажми ДА 😿";
+            tempMsg.style.position = "fixed";
+            tempMsg.style.bottom = "20px";
+            tempMsg.style.left = "50%";
+            tempMsg.style.transform = "translateX(-50%)";
+            tempMsg.style.background = "#ffcccc";
+            tempMsg.style.padding = "8px 16px";
+            tempMsg.style.borderRadius = "30px";
+            tempMsg.style.zIndex = "2000";
+            document.body.appendChild(tempMsg);
+            setTimeout(() => tempMsg.remove(), 2000);
+        }
+        
+        updateBackground();
+        if (navigator.vibrate) navigator.vibrate(30);
     };
 
+    // --- Котик (погладить) ---
     cat.onclick = () => {
-        cat.textContent = '😺';
-        setTimeout(() => { cat.textContent = done ? '🐱❤️' : '🐱'; }, 300);
+        const petPhrases = ["🐱 мур?", "😻 спасибо!", "💚 приятно", "🐱 урр", "❤️ гладь ещё"];
+        const phrase = petPhrases[Math.floor(Math.random() * petPhrases.length)];
+        const toast = document.createElement('div');
+        toast.textContent = phrase;
+        toast.style.position = "fixed";
+        toast.style.bottom = "40%";
+        toast.style.left = "50%";
+        toast.style.transform = "translate(-50%, -50%)";
+        toast.style.background = "rgba(0,0,0,0.8)";
+        toast.style.color = "#ffd966";
+        toast.style.padding = "10px 20px";
+        toast.style.borderRadius = "40px";
+        toast.style.fontSize = "18px";
+        toast.style.zIndex = "2000";
+        toast.style.fontWeight = "bold";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1000);
+        
+        createEffect('stars', 12);
+        cat.classList.add('cat-purr');
+        setTimeout(() => cat.classList.remove('cat-purr'), 300);
+        if (navigator.vibrate) navigator.vibrate(40);
+        
+        if (!isLoved) {
+            cat.textContent = "😺";
+            setTimeout(() => { if (!isLoved) cat.textContent = "🐱"; }, 600);
+        }
     };
+
+    // Эффект наведения
+    cat.onmouseenter = () => { if (!isLoved) cat.style.transform = "scale(1.08)"; };
+    cat.onmouseleave = () => { cat.style.transform = "scale(1)"; };
 </script>
 </body>
 </html>
